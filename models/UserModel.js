@@ -1,24 +1,27 @@
 const { sequelize } = require('../config/db'); // Sequelize configuré
 const { QueryTypes } = require('sequelize'); // Nécessaire pour exécuter des requêtes brutes
-const crypto = require('crypto'); // Utilisation de crypto pour chiffrement/déchiffrement
+const CryptoJS = require('crypto-js'); // Importation de crypto-js
 
 class UserModel {
-  // Fonction pour chiffrer le mot de passe
-  static encryptPassword(password) {
-    const secretKey = 'superSecretKey'; // Une clé secrète que vous utilisez pour le chiffrement
-    const cipher = crypto.createCipher('aes-256-cbc', secretKey); // Crée un cipher avec un algorithme de chiffrement (ici, AES-256)
-    let encrypted = cipher.update(password, 'utf8', 'hex'); // Chiffre le mot de passe
-    encrypted += cipher.final('hex'); // Ajoute le reste du chiffrement
-    return encrypted;
+  // Fonction de hachage avec SHA-256 via crypto-js pour le mot de passe et l'email
+  static hashPassword(password) {
+    return CryptoJS.SHA256(password).toString(CryptoJS.enc.Base64); // Hachage avec SHA-256 en Base64
   }
 
-  // Fonction pour déchiffrer le mot de passe
-  static decryptPassword(encryptedPassword) {
-    const secretKey = 'superSecretKey'; // La même clé secrète utilisée pour le chiffrement
-    const decipher = crypto.createDecipher('aes-256-cbc', secretKey); // Crée un decipher
-    let decrypted = decipher.update(encryptedPassword, 'hex', 'utf8'); // Déchiffre le mot de passe
-    decrypted += decipher.final('utf8'); // Finalise le déchiffrement
-    return decrypted;
+  static hashEmail(email) {
+    return CryptoJS.SHA256(email).toString(CryptoJS.enc.Base64); // Hachage avec SHA-256 pour l'email
+  }
+
+  // Fonction de comparaison de mot de passe
+  static comparePassword(inputPassword, storedPasswordHash) {
+    const hashedInputPassword = UserModel.hashPassword(inputPassword);
+    return hashedInputPassword === storedPasswordHash;
+  }
+
+  // Fonction de comparaison d'email
+  static compareEmail(inputEmail, storedEmailHash) {
+    const hashedInputEmail = UserModel.hashEmail(inputEmail);
+    return hashedInputEmail === storedEmailHash;
   }
 
   async createUser(userData) {
@@ -32,15 +35,18 @@ class UserModel {
         user_date_naissance,
         user_mail,
         user_phone,
-        user_photo_url,
+        user_photo_url, 
         id_type_user,
         mot_de_passe,
       } = userData;
 
       const user_created_at = new Date().toISOString().slice(0, 19).replace("T", " ");
 
-      // Chiffrement du mot de passe sans bcrypt
-      const encryptedPassword = UserModel.encryptPassword(mot_de_passe);
+      // Hachage du mot de passe avec SHA-256
+      const hashedPassword = UserModel.hashPassword(mot_de_passe);
+
+      // Hachage de l'email avec SHA-256
+      const hashedEmail = UserModel.hashEmail(user_mail);
 
       // Insertion de l'utilisateur dans la base de données
       await sequelize.query(
@@ -58,19 +64,22 @@ class UserModel {
             ville,
             user_created_at,
             user_date_naissance,
-            user_mail,
+            user_mail: hashedEmail, // Utilisation du mail haché
             user_phone,
             user_photo_url,
             id_type_user,
-            mot_de_passe: encryptedPassword,
+            mot_de_passe: hashedPassword,
           },
           type: QueryTypes.INSERT,
         }
       );
 
+      const user = await sequelize.query('SELECT * FROM users ORDER BY id_users DESC LIMIT 1');
+
       return {
         success: true,
         message: 'Utilisateur créé avec succès.',
+        user: user
       };
     } catch (error) {
       console.error('Erreur dans createUser :', error.message);
@@ -83,11 +92,14 @@ class UserModel {
 
   async loginUser(user_mail, mot_de_passe) {
     try {
-      // Recherche de l'utilisateur par email
+      // Hachage de l'email fourni pour la comparaison
+      const hashedEmail = UserModel.hashEmail(user_mail);
+
+      // Recherche de l'utilisateur par email haché
       const users = await sequelize.query(
         'SELECT * FROM users WHERE user_mail = :user_mail',
         {
-          replacements: { user_mail },
+          replacements: { user_mail: hashedEmail },
           type: QueryTypes.SELECT,
         }
       );
@@ -101,11 +113,8 @@ class UserModel {
 
       const user = users[0];
 
-      // Déchiffrement du mot de passe stocké dans la base de données
-      const decryptedPassword = UserModel.decryptPassword(user.mot_de_passe);
-
-      // Vérification du mot de passe
-      if (decryptedPassword !== mot_de_passe) {
+      // Comparaison du mot de passe avec le mot de passe haché stocké dans la base de données
+      if (!UserModel.comparePassword(mot_de_passe, user.mot_de_passe)) {
         return {
           success: false,
           message: 'Mot de passe incorrect.',

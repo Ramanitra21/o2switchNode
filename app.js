@@ -27,8 +27,8 @@ app.use('/images', express.static('public/images'));
 app.use('/api', route);
 
 // Route de test
-app.get('/', (req, res) => {
-  res.send('Bienvenue sur le serveur Node.js');
+app.get('/', (req, res) => { 
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Démarrage du serveur

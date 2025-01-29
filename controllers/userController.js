@@ -74,10 +74,16 @@ exports.createUser = async (req, res) => {
       });
     }
 
+    const user = result.user;
+
+    const { access, token } = getAccessAndToken(user);
+
     return res.status(201).json({
       success: true,
       message: 'Utilisateur créé avec succès.',
-      user: result,
+      user: user,
+      token : token,
+      access
     });
   } catch (error) {
     console.error('Erreur dans createUser controller :', error.message);
@@ -120,6 +126,7 @@ exports.loginUser = async (req, res) => {
       message: 'Connexion réussie.',
       user: user,
       token,
+      access
     });
   } catch (error) {
     console.error('Erreur dans loginUser controller :', error.message);
