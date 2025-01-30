@@ -17,4 +17,4 @@ const JoursCorrespondance = sequelize.define('JoursCorrespondance', {
   timestamps: false,
 });
 
-module.exports = JoursCorrespondance;
+// module.exports = JoursCorrespondance;

@@ -70,37 +70,37 @@ class PraticienModel {
         }
     }
 
-    async searchUser(query) {
-        try {
-            const result = await sequelize.query(
-                `SELECT * FROM users 
-                 WHERE user_name LIKE :query OR user_mail LIKE :query`,
-                {
-                    replacements: { query: `%${query}%` },
-                    type: sequelize.QueryTypes.SELECT
-                }
-            );
+    // async searchUser(query) {
+    //     try {
+    //         const result = await sequelize.query(
+    //             `SELECT * FROM users 
+    //              WHERE user_name LIKE :query OR user_mail LIKE :query`,
+    //             {
+    //                 replacements: { query: `%${query}%` },
+    //                 type: sequelize.QueryTypes.SELECT
+    //             }
+    //         );
 
-            if (result.length > 0) {
-                return {
-                    success: true,
-                    message: 'Utilisateur(s) trouvé(s).',
-                    data: result
-                };
-            } else {
-                return {
-                    success: false,
-                    message: 'Aucun utilisateur trouvé.'
-                };
-            }
-        } catch (error) {
-            console.error('Erreur dans searchUser :', error.message);
-            return {
-                success: false,
-                message: 'Erreur interne du serveur.'
-            };
-        }
-    }
+    //         if (result.length > 0) {
+    //             return {
+    //                 success: true,
+    //                 message: 'Utilisateur(s) trouvé(s).',
+    //                 data: result
+    //             };
+    //         } else {
+    //             return {
+    //                 success: false,
+    //                 message: 'Aucun utilisateur trouvé.'
+    //             };
+    //         }
+    //     } catch (error) {
+    //         console.error('Erreur dans searchUser :', error.message);
+    //         return {
+    //             success: false,
+    //             message: 'Erreur interne du serveur.'
+    //         };
+    //     }
+    // }
 
     async createDiscipline(nom_dsp) {
         try {
