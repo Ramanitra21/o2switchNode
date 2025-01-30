@@ -35,7 +35,7 @@ router.post('/createPraticien', PraticienController.createPraticien);
 router.get('/getPraticien', PraticienController.getPraticien);
 
 // Routes discipline et pratique
-router.post('/discipline/create',  PraticienController.createDiscipline);
+router.post('/discipline/create', authMiddleware, PraticienController.createDiscipline);
 router.post('/pratique/create', PraticienController.createPratique);
 router.get('/pratiques', PraticienController.getPratiques);
 
@@ -55,4 +55,6 @@ router.post('/pratique/create', PratiqueController.createPratique);
 router.get('/pratiques/praticien/:id_prat_det', PratiqueController.getPratiquesByIdPratDet);
 router.get('/pratiques/discipline/:id_dsp', PratiqueController.getPratiquesByIdDsp);
 
+// Route pour ajouter un jour de travail pour un praticien
+router.post('/jour-travail/create', PraticienController.createJourTravailPraticien);
 module.exports = router;

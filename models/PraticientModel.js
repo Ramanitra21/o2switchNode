@@ -199,6 +199,25 @@ class PraticienModel {
         }
     }
 
+    async addJourTravailPraticien(id_prat_det, id_jour, heure_debut_travail, heure_fin_travail) {
+        try {
+            const result = await sequelize.query(
+                `INSERT INTO jour_travail_praticien (id_prat_det, id_jour, heure_debut_travail, heure_fin_travail)
+                 VALUES (:id_prat_det, :id_jour, COALESCE(:heure_debut_travail, '09:00:00'), COALESCE(:heure_fin_travail, '17:00:00'))`,
+                {
+                    replacements: { id_prat_det, id_jour, heure_debut_travail, heure_fin_travail },
+                    type: sequelize.QueryTypes.INSERT
+                }
+            );
+    
+            return { success: true, message: 'Jour de travail ajouté avec succès.' };
+        } catch (error) {
+            console.error('Erreur dans addJourTravailPraticien :', error.message);
+            return { success: false, message: 'Erreur interne du serveur.' };
+        }
+    }
+    
+
     async getPratiques(searchQuery) {
         try {
             let query = `SELECT * FROM pratiques WHERE 1=1`;

@@ -4,6 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const route = require('./route/routes');
 const app = express();
+const cors = require('cors');
 
 // Configuration de multer pour l'upload d'images
 const storage = multer.diskStorage({
@@ -16,6 +17,8 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
+
+app.use(cors());
 
 // Middleware pour analyser le corps de la requête
 app.use(bodyParser.json());
