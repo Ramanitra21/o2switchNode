@@ -3,25 +3,15 @@ const { QueryTypes } = require('sequelize'); // Nécessaire pour exécuter des r
 const CryptoJS = require('crypto-js'); // Importation de crypto-js
 
 class UserModel {
-  // Fonction de hachage avec SHA-256 via crypto-js pour le mot de passe et l'email
+  // Fonction de hachage avec SHA-256 via crypto-js pour le mot de passe
   static hashPassword(password) {
     return CryptoJS.SHA256(password).toString(CryptoJS.enc.Base64); // Hachage avec SHA-256 en Base64
-  }
-
-  static hashEmail(email) {
-    return CryptoJS.SHA256(email).toString(CryptoJS.enc.Base64); // Hachage avec SHA-256 pour l'email
   }
 
   // Fonction de comparaison de mot de passe
   static comparePassword(inputPassword, storedPasswordHash) {
     const hashedInputPassword = UserModel.hashPassword(inputPassword);
     return hashedInputPassword === storedPasswordHash;
-  }
-
-  // Fonction de comparaison d'email
-  static compareEmail(inputEmail, storedEmailHash) {
-    const hashedInputEmail = UserModel.hashEmail(inputEmail);
-    return hashedInputEmail === storedEmailHash;
   }
 
   async createUser(userData) {
@@ -35,18 +25,15 @@ class UserModel {
         user_date_naissance,
         user_mail,
         user_phone,
-        user_photo_url, 
+        user_photo_url,
         id_type_user,
         mot_de_passe,
       } = userData;
 
-      const user_created_at = new Date().toISOString().slice(0, 19).replace("T", " ");
+      const user_created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
       // Hachage du mot de passe avec SHA-256
       const hashedPassword = UserModel.hashPassword(mot_de_passe);
-
-      // Hachage de l'email avec SHA-256
-      const hashedEmail = UserModel.hashEmail(user_mail);
 
       // Insertion de l'utilisateur dans la base de données
       await sequelize.query(
@@ -64,22 +51,25 @@ class UserModel {
             ville,
             user_created_at,
             user_date_naissance,
-            user_mail: hashedEmail, // Utilisation du mail haché
+            user_mail, // Utilisation de l'e-mail non haché
             user_phone,
             user_photo_url,
             id_type_user,
-            mot_de_passe: hashedPassword,
+            mot_de_passe: hashedPassword, // Utilisation du mot de passe haché
           },
           type: QueryTypes.INSERT,
         }
       );
 
-      const user = await sequelize.query('SELECT * FROM users ORDER BY id_users DESC LIMIT 1');
+      // Récupérer l'utilisateur créé
+      const [user] = await sequelize.query('SELECT * FROM users ORDER BY id_users DESC LIMIT 1', {
+        type: QueryTypes.SELECT,
+      });
 
       return {
         success: true,
         message: 'Utilisateur créé avec succès.',
-        user: user
+        user: user,
       };
     } catch (error) {
       console.error('Erreur dans createUser :', error.message);
@@ -92,14 +82,11 @@ class UserModel {
 
   async loginUser(user_mail, mot_de_passe) {
     try {
-      // Hachage de l'email fourni pour la comparaison
-      const hashedEmail = UserModel.hashEmail(user_mail);
-
-      // Recherche de l'utilisateur par email haché
+      // Recherche de l'utilisateur par email (non haché)
       const users = await sequelize.query(
         'SELECT * FROM users WHERE user_mail = :user_mail',
         {
-          replacements: { user_mail: hashedEmail },
+          replacements: { user_mail }, // Utilisation de l'e-mail non haché
           type: QueryTypes.SELECT,
         }
       );
