@@ -1,40 +1,19 @@
 const RendezVousModel = require('../models/RendezVousModel');
-const rendezVousModel = new RendezVousModel;
+const rendezVousModel = new RendezVousModel();
 
 class RendezVousController {
-    async createRendezVous(req, res) {
+    async getRendezVousByUser(req, res) {
         try {
-            const { date_rdv, heure_rdv, motif_rdv, status_rdv, duree, id_pratique, id_users, id_users_1 } = req.body;
-            //id_users patient
-            // id_users_1 praticien
+            const { id_users } = req.params;
 
-            const result = await rendezVousModel.createRendezVous(date_rdv, heure_rdv, motif_rdv, status_rdv, duree, id_pratique, id_users, id_users_1);
-
-            if (result.success) {
-                return res.status(201).json({
-                    success: true,
-                    message: result.message,
-                });
-            } else {
-                return res.status(500).json({
+            if (!id_users) {
+                return res.status(400).json({
                     success: false,
-                    message: result.message,
+                    message: 'ID utilisateur requis.'
                 });
             }
-        } catch (error) {
-            console.error('Erreur dans createRendezVous:', error.message);
-            return res.status(500).json({
-                success: false,
-                message: 'Erreur interne du serveur.',
-            });
-        }
-    }
 
-    async getRendezVousByIdUsers1(req, res) {
-        try {
-            const { id_users_1 } = req.params; // Récupérer id_users_1 depuis l'URL
-
-            const result = await rendezVousModel.getRendezVousByIdUsers1(id_users_1);
+            const result = await rendezVousModel.getRendezVousByUser(id_users);
 
             if (result.success) {
                 return res.status(200).json({
@@ -44,14 +23,47 @@ class RendezVousController {
             } else {
                 return res.status(500).json({
                     success: false,
-                    message: result.message,
+                    message: result.message
                 });
             }
         } catch (error) {
-            console.error('Erreur dans getRendezVousByIdUsers1:', error.message);
+            console.error('Erreur dans getRendezVousByUser:', error.message);
             return res.status(500).json({
                 success: false,
-                message: 'Erreur interne du serveur.',
+                message: 'Erreur interne du serveur.'
+            });
+        }
+    }
+
+    async createRendezVous(req, res) {
+        try {
+            const { date_rdv, heure_rdv, motif_rdv, status_rdv, id_pratique, id_users, id_users_1 } = req.body;
+
+            if (!date_rdv || !heure_rdv || !motif_rdv || !status_rdv || !id_pratique || !id_users || !id_users_1) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Tous les champs sont requis.'
+                });
+            }
+
+            const result = await rendezVousModel.createRendezVous(date_rdv, heure_rdv, motif_rdv, status_rdv, id_pratique, id_users, id_users_1);
+
+            if (result.success) {
+                return res.status(201).json({
+                    success: true,
+                    message: result.message
+                });
+            } else {
+                return res.status(500).json({
+                    success: false,
+                    message: result.message
+                });
+            }
+        } catch (error) {
+            console.error('Erreur dans createRendezVous:', error.message);
+            return res.status(500).json({
+                success: false,
+                message: 'Erreur interne du serveur.'
             });
         }
     }

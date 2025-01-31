@@ -41,7 +41,7 @@ router.get('/pratiques', PraticienController.getPratiques);
 
 // Routes rendez-vous
 router.post('/rdv/create', RendezVousController.createRendezVous);
-router.get('/rdv/user/:id_users_1', RendezVousController.getRendezVousByIdUsers1);
+router.get('/rdv/user/:id_users_1', RendezVousController.getRendezVousByUser);
 // router.get('/praticiens/search', PraticienController.searchPraticien);
 
 // Routes agenda

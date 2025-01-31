@@ -31,7 +31,32 @@ class PraticienController {
             });
         }
     }
+    // Ajouter un jour de travail pour un praticien
+    async createJourTravailPraticien(req, res) {
+        try {
+            const { id_prat_det, id_jour, heure_debut_travail, heure_fin_travail } = req.body;
 
+            const result = await praticienModel.addJourTravailPraticien(id_prat_det, id_jour, heure_debut_travail, heure_fin_travail);
+
+            if (result.success) {
+                return res.status(201).json({
+                    success: true,
+                    message: result.message,
+                });
+            } else {
+                return res.status(500).json({
+                    success: false,
+                    message: result.message,
+                });
+            }
+        } catch (error) {
+            console.error('Erreur dans createJourTravailPraticien:', error.message);
+            return res.status(500).json({
+                success: false,
+                message: 'Erreur interne du serveur.',
+            });
+        }
+    }
     // Fonction pour récupérer un praticien avec ses informations utilisateurs
     async getPraticien(req, res) {
         try {
