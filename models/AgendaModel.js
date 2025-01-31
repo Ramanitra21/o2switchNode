@@ -52,14 +52,44 @@ class AgendaModel {
             }
     
             // Insertion du créneau avec disponibilité par défaut (1 = disponible)
-            await sequelize.query(
-                `INSERT INTO creneaux_disponibilite (date_dispo, heure_debut_dispo, heure_fin_dispo, status, date_ajout_dispo, id_pratique) 
-                 VALUES (:date_dispo, :heure_debut_dispo, :heure_fin_dispo, 1, NOW(), :id_pratique)`,
-                {
-                    replacements: { date_dispo, heure_debut_dispo, heure_fin_dispo, id_pratique },
-                    type: sequelize.QueryTypes.INSERT,
-                }
-            );
+// Initialisation de l'heure de début en tant qu'objet Date
+let currentHeureDebut = new Date(`1970-01-01T${heure_debut_dispo}:00`);
+
+// Calcul de l'heure de fin pour le premier créneau en ajoutant la durée
+let currentHeureFin = new Date(currentHeureDebut.getTime() + (dureePratique * 3600000)); // dureePratique est en minutes
+
+// Boucle pour créer les créneaux jusqu'à ce que l'heure de fin dépasse heure_fin_dispo
+while (currentHeureFin <= new Date(`1970-01-01T${heure_fin_dispo}:00`)) {
+    
+    // Récupération des heures et minutes au format HH:MM pour heure_debut_dispo
+    const heureDebutStr = `${currentHeureDebut.getHours().toString().padStart(2, '0')}:${currentHeureDebut.getMinutes().toString().padStart(2, '0')}`;
+    
+    // Récupération des heures et minutes au format HH:MM pour heure_fin_dispo
+    const heureFinStr = `${currentHeureFin.getHours().toString().padStart(2, '0')}:${currentHeureFin.getMinutes().toString().padStart(2, '0')}`;
+
+    // Insertion d'un créneau dans la base de données
+    await sequelize.query(
+        `INSERT INTO creneaux_disponibilite (date_dispo, heure_debut_dispo, heure_fin_dispo, status, date_ajout_dispo, id_pratique) 
+         VALUES (:date_dispo, :heure_debut_dispo, :heure_fin_dispo, 1, NOW(), :id_pratique)`,
+        {
+            replacements: {
+                date_dispo,           // La date du créneau
+                heure_debut_dispo: heureDebutStr,  // Heure de début (ex. "08:00")
+                heure_fin_dispo: heureFinStr,      // Heure de fin (ex. "08:30")
+                id_pratique          // Identifiant de la pratique concernée
+            },
+            type: sequelize.QueryTypes.INSERT, // Type d'opération Sequelize : INSERTION
+        }
+    );
+
+    // Passer au créneau suivant :
+    // L'heure de début devient l'heure de fin actuelle
+    currentHeureDebut = currentHeureFin;
+
+    // Calculer la nouvelle heure de fin en ajoutant la durée de pratique
+    currentHeureFin = new Date(currentHeureDebut.getTime() + (dureePratique * 3600000)); // Ajoute dureePratique minutes
+}
+
     
             return {
                 success: true,
