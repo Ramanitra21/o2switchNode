@@ -7,6 +7,7 @@ const PraticienController = require('../controllers/praticientController');
 const RendezVousController = require('../controllers/RendezVousController');
 const AgendaController = require('../controllers/AgendaController');
 const PratiqueController = require('../controllers/PratiqueController');
+const UserPraticienController = require('../controllers/UserPraticienController');
 const { authMiddleware } = require('../config/auth');
 
 // Configuration de multer pour l'upload des images
@@ -33,6 +34,10 @@ router.post('/create', upload.single('user_photo'), userController.createUser);
 // Routes praticien
 router.post('/createPraticien', PraticienController.createPraticien);
 router.get('/getPraticien', PraticienController.getPraticien);
+
+// Routes User Praticien
+router.post('/createUserPraticien',  upload.single('user_photo_url'), UserPraticienController.createUserPraticien);
+// router.get('/getUserPraticien', UserPraticienController.getPraticien);
 
 // Routes discipline et pratique
 router.post('/discipline/create', authMiddleware, PraticienController.createDiscipline);

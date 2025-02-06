@@ -3,3 +3,48 @@ Login : dehe7322
 Password : nb{-ukJFFR0P
 
 motdepasse database : mdv-50U
+
+
+-------------------------------------
+mdp : [5Yvsf5vg3@(
+bdd : dehe7322_medical_app
+
+
+------------------------------------------
+git hub
+
+support@passion-vins.fr
+mE)?v32)Xgw9
+
+--------------------------
+compte ftp 
+mdp : _!(yx;WeGmhg
+
+Crée un compte FTP dédié :
+Ajouter un compte FTP
+Connexion
+medical_app
+@
+Domaine
+
+back.passion-vins.fr
+Mot de passe
+••••••••••••
+Confirmation du mot de passe
+••••••••••••
+Niveau de sécurité 
+Très élevé (97/100)
+Répertoire
+/home/dehe7322/back.passion-vins.fr/medical_app
+
+
+FTP_HOST → ftp.dehe7322.odns.fr
+FTP_USERNAME_BACKEND → medical_app@back.passion-vins.fr
+FTP_PASSWORD_BACKEND → 5Yvsf5vg3@(
+FTP_PORT → 21
+
+
+FTP_HOST → ftp.dehe7322.odns.fr
+FTP_USERNAME_FRONTEND → medical_app@front.passion-vins.fr
+FTP_PASSWORD_FRONTEND → 5Yvsf5vg3@(
+FTP_PORT → 21

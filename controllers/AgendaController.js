@@ -112,6 +112,7 @@ class AgendaController {
             });
         }
     }
+    
 }
 
 module.exports = new AgendaController();

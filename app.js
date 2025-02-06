@@ -22,9 +22,9 @@ app.use(cors());
 
 // Middleware pour analyser le corps de la requête
 app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: true })); // Ajout pour gérer les requêtes x-www-form-urlencoded
 
 app.use('/images', express.static('public/images'));
-
 
 // Routes
 app.use('/api', route);
