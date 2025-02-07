@@ -1,7 +1,9 @@
-const nodemailer = require('nodemailer'); // Importer nodemailer
-const { sequelize } = require('../config/db');
-const { QueryTypes } = require('sequelize');
-const CryptoJS = require('crypto-js'); // Importation de crypto-js
+/** @format */
+
+const nodemailer = require("nodemailer"); // Importer nodemailer
+const { sequelize } = require("../config/db");
+const { QueryTypes } = require("sequelize");
+const CryptoJS = require("crypto-js"); // Importation de crypto-js
 
 class UserPraticienModel {
   // Fonction de hachage avec SHA-256 via crypto-js pour le mot de passe
@@ -16,24 +18,25 @@ class UserPraticienModel {
   }
 
   // Fonction pour envoyer l'email de confirmation
-  async sendConfirmationEmail(userEmail, userName) {  // Utiliser `userName` au lieu de `nameUser`
+  async sendConfirmationEmail(userEmail, userName) {
+    // Utiliser `userName` au lieu de `nameUser`
     try {
       // Créer un transporteur d'email
       const transporter = nodemailer.createTransport({
-        host: 'passion-vins.fr',
+        host: "passion-vins.fr",
         port: 465,
         secure: true,
         auth: {
-          user: 'team@passion-vins.fr',
-          pass: '0?M{)K@PU#UC',
-        }
+          user: "team@passion-vins.fr",
+          pass: "0?M{)K@PU#UC",
+        },
       });
-  
+
       const mailOptions = {
-        from: 'team@passion-vins.fr',
+        from: "team@passion-vins.fr",
         to: userEmail,
-        subject: 'Bienvenue sur notre plateforme',
-        text: 'Votre compte praticien a été créé avec succès. Merci de nous rejoindre !',
+        subject: "Bienvenue sur notre plateforme",
+        text: "Votre compte praticien a été créé avec succès. Merci de nous rejoindre !",
         html: `<!DOCTYPE html>
         <html lang="en">
           <head>
@@ -143,17 +146,16 @@ class UserPraticienModel {
               </footer>
             </div>
           </body>
-        </html>`
+        </html>`,
       };
-  
+
       // Envoi de l'email
       await transporter.sendMail(mailOptions);
-      console.log('Email de confirmation envoyé avec succès');
+      console.log("Email de confirmation envoyé avec succès");
     } catch (error) {
-      console.error('Erreur lors de l\'envoi de l\'email :', error);
+      console.error("Erreur lors de l'envoi de l'email :", error);
     }
   }
-  
 
   // Méthode pour créer un utilisateur
   async createUserPraticien(userData) {
@@ -174,34 +176,44 @@ class UserPraticienModel {
         duree_echeance,
       } = userData;
 
-      const user_created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      const user_created_at = new Date()
+        .toISOString()
+        .slice(0, 19)
+        .replace("T", " ");
 
-      console.log('Étape 1 : Vérification de l\'existence de l\'email');
+      console.log("Étape 1 : Vérification de l'existence de l'email");
 
       // Vérification de l'existence de l'email avec un id_type_user identique
       const existingUsers = await sequelize.query(
-        'SELECT * FROM users WHERE user_mail = :user_mail',
+        "SELECT * FROM users WHERE user_mail = :user_mail",
         {
-          replacements: { user_mail: user_mail },  // Passez explicitement user_mail
+          replacements: { user_mail: user_mail }, // Passez explicitement user_mail
           type: QueryTypes.SELECT,
         }
       );
-      
 
-      const userExistsWithSameType = existingUsers.some(user => user.id_type_user === 1);
+      const userExistsWithSameType = existingUsers.some(
+        (user) => user.id_type_user === 1
+      );
       if (userExistsWithSameType) {
-        console.log('Étape 2 : Utilisateur avec le même email et type déjà existant.');
+        console.log(
+          "Étape 2 : Utilisateur avec le même email et type déjà existant."
+        );
         return {
           success: false,
-          message: 'Un utilisateur avec cet email et ce type existe déjà.',
+          message: "Un utilisateur avec cet email et ce type existe déjà.",
         };
       }
 
-      console.log('Étape 3 : Hachage du mot de passe');
+      console.log("Étape 3 : Hachage du mot de passe");
       // Hachage du mot de passe avec SHA-256
-      const hashedPassword = await UserPraticienModel.hashPassword(mot_de_passe);
+      const hashedPassword = await UserPraticienModel.hashPassword(
+        mot_de_passe
+      );
 
-      console.log('Étape 4 : Insertion de l\'utilisateur dans la base de données');
+      console.log(
+        "Étape 4 : Insertion de l'utilisateur dans la base de données"
+      );
       // Insertion de l'utilisateur dans la base de données
       const [userResult] = await sequelize.query(
         `INSERT INTO users 
@@ -227,14 +239,17 @@ class UserPraticienModel {
         }
       );
 
-      console.log('Étape 5 : Récupération de l\'ID de l\'utilisateur créé');
+      console.log("Étape 5 : Récupération de l'ID de l'utilisateur créé");
       // Récupérer l'ID de l'utilisateur créé
-      const [user] = await sequelize.query('SELECT * FROM users WHERE user_mail = :user_mail ORDER BY id_users DESC LIMIT 1', {
-        replacements: { user_mail },
-        type: QueryTypes.SELECT,
-      });
+      const [user] = await sequelize.query(
+        "SELECT * FROM users WHERE user_mail = :user_mail ORDER BY id_users DESC LIMIT 1",
+        {
+          replacements: { user_mail },
+          type: QueryTypes.SELECT,
+        }
+      );
 
-      console.log('Étape 6 : Insertion des informations du praticien');
+      console.log("Étape 6 : Insertion des informations du praticien");
       // Insérer les infos du praticien
       await sequelize.query(
         `INSERT INTO praticien_info (numero_ciret, monney, duree_echeance, id_users)
@@ -250,55 +265,61 @@ class UserPraticienModel {
         }
       );
 
-      console.log('Étape 7 : Envoi de l\'email de confirmation');
+      console.log("Étape 7 : Envoi de l'email de confirmation");
       // Envoyer un email de confirmation
       await this.sendConfirmationEmail(user_mail, user_forname);
 
       return {
         success: true,
-        message: 'Utilisateur praticien créé avec succès.',
+        message: "Utilisateur praticien créé avec succès.",
         user,
       };
     } catch (error) {
-      console.error('Erreur dans createUserPraticien :', error.message);
+      console.error("Erreur dans createUserPraticien :", error.message);
       return {
         success: false,
-        message: 'Erreur interne du serveur.',
+        message: "Erreur interne du serveur.",
       };
     }
   }
 
-
   async loginUserPraticien(user_mail, mot_de_passe) {
     try {
+      // Vérifier si les paramètres sont bien définis
+      if (!user_mail || !mot_de_passe) {
+        return {
+          success: false,
+          message: "Email et mot de passe sont requis.",
+        };
+      }
+
+      // Requête SQL pour récupérer l'utilisateur et vérifier l'id_type_user dans la même requête
       const users = await sequelize.query(
-        'SELECT * FROM users WHERE user_mail = :user_mail',
+        "SELECT * FROM users WHERE user_mail = :user_mail AND id_type_user = 1", // Assure-toi que user_mail est bien passé
         {
-          replacements: { user_mail },
+          replacements: { user_mail }, // Assurer que user_mail est dans les remplacements
           type: QueryTypes.SELECT,
         }
       );
 
+      // Vérification si aucun utilisateur n'a été trouvé
       if (users.length === 0) {
         return {
           success: false,
-          message: 'Email incorrect.',
+          message:
+            "Accès refusé : utilisateur non praticien ou email incorrect.",
         };
       }
 
       const user = users[0];
 
-      if (!UserPraticienModel.comparePassword(mot_de_passe, user.mot_de_passe)) {
+      // Comparaison du mot de passe avec le mot de passe haché stocké dans la base de données
+      if (
+        !UserPraticienModel.comparePassword(mot_de_passe, user.mot_de_passe)
+      ) {
         return {
           success: false,
-          message: 'Mot de passe incorrect.',
-        };
-      }
-
-      if (user.id_type_user !== 1) {
-        return {
-          success: false,
-          message: 'Accès refusé : utilisateur non praticien.',
+          message: "Mot de passe incorrect.",
         };
       }
 
@@ -307,10 +328,10 @@ class UserPraticienModel {
         user,
       };
     } catch (error) {
-      console.error('Erreur dans loginUserPraticien :', error.message);
+      console.error("Erreur dans loginUserPraticien :", error.message);
       return {
         success: false,
-        message: 'Erreur interne du serveur.',
+        message: "Erreur interne du serveur.",
       };
     }
   }

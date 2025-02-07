@@ -1,123 +1,152 @@
-const UserPraticienModel = require('../models/UserPraticienModel');
+/** @format */
+
+const UserPraticienModel = require("../models/UserPraticienModel");
 const userPraticienModel = new UserPraticienModel();
+const { generateToken } = require("../config/auth"); // Fonction pour générer un JWT
 
-class UserPraticienController {
-    // Fonction pour créer un utilisateur praticien
-async createUserPraticien(req, res) {
-    try {
-        // Affiche les données reçues pour débogage
-        console.log('Requête reçue :', req.body);
+// Génération de l'access et token en fonction du type d'utilisateur
+const getAccessAndToken = (user) => {
+  let access = [];
+  let token = "";
 
-        // Déstructuration des données du body de la requête
-        const { 
-            user_name, 
-            user_forname, 
-            adresse, 
-            code_postal, 
-            ville, 
-            user_date_naissance, 
-            user_mail, 
-            user_phone, 
-            mot_de_passe, 
-            numero_ciret, 
-            monney, 
-            duree_echeance 
-        } = req.body;
+  // Gestion des accès en fonction du type d'utilisateur
+  switch (user.id_type_user) {
+    case 1:
+      access = [1, 2, 3]; // Exemple d'accès pour le praticien
+      token = generateToken({ ...user, access });
+      break;
+    case 2:
+      access = [3, 4, 5, 6, 7]; // Exemple d'accès pour un autre type
+      token = generateToken({ ...user, access });
+      break;
+    case 3:
+      access = [7, 8]; // Exemple d'accès pour un autre type
+      token = generateToken({ ...user, access });
+      break;
+    default:
+      access = [];
+      token = generateToken({ ...user, access });
+      break;
+  }
 
-        // Si une photo a été téléchargée, on met à jour l'URL de la photo
-        let photoUrl = '';
-        if (req.file) {
-            photoUrl = `/images/${req.file.filename}`;
-        }
+  return { access, token };
+};
 
-        // Affichage de chaque variable et sa valeur
-        console.log('user_name:', user_name);
-        console.log('user_forname:', user_forname);
-        console.log('adresse:', adresse);
-        console.log('code_postal:', code_postal);
-        console.log('ville:', ville);
-        console.log('user_date_naissance:', user_date_naissance);
-        console.log('user_mail:', user_mail);
-        console.log('user_phone:', user_phone);
-        console.log('mot_de_passe:', mot_de_passe);
-        console.log('numero_ciret:', numero_ciret);
-        console.log('monney:', monney);
-        console.log('duree_echeance:', duree_echeance);
-        console.log('user_photo_url:', photoUrl);  // Affichage de l'URL de la photo
+// Contrôleur pour créer un utilisateur praticien
+exports.createUserPraticien = async (req, res) => {
+  try {
+    const {
+      user_name,
+      user_forname,
+      adresse,
+      code_postal,
+      ville,
+      user_date_naissance,
+      user_mail,
+      user_phone,
+      mot_de_passe,
+      numero_ciret,
+      monney,
+      duree_echeance,
+    } = req.body;
 
-        // Préparation des données à envoyer à la base de données
-        const userPraticienData = {
-            user_name,
-            user_forname,
-            adresse,
-            code_postal,
-            ville,
-            user_date_naissance,
-            user_mail,
-            user_phone,
-            user_photo_url: photoUrl,  // L'URL de l'image
-            mot_de_passe,
-            numero_ciret,
-            monney,
-            duree_echeance
-        };
-
-        // Appel à la méthode pour créer un utilisateur praticien
-        const result = await userPraticienModel.createUserPraticien(userPraticienData);
-
-        // Si l'utilisateur est créé avec succès, on renvoie une réponse
-        if (result.success) {
-            console.log('Contrôleur : Utilisateur praticien créé avec succès.');
-            return res.status(201).json({
-                success: true,
-                message: result.message,
-                user: result.user,
-            });
-        } else {
-            // Si la création échoue, on renvoie une erreur
-            console.log('Contrôleur : Erreur lors de la création de l\'utilisateur.');
-            return res.status(400).json({
-                success: false,
-                message: result.message,
-            });
-        }
-    } catch (error) {
-        // Gestion des erreurs
-        console.error('Erreur dans createUserPraticien (contrôleur):', error.message);
-        return res.status(500).json({
-            success: false,
-            message: 'Erreur interne du serveur.',
-        });
+    // Si une photo a été téléchargée, on met à jour l'URL de la photo
+    let photoUrl = "";
+    if (req.file) {
+      photoUrl = `/images/${req.file.filename}`;
     }
-}
 
+    // Préparation des données à envoyer à la base de données
+    const userPraticienData = {
+      user_name,
+      user_forname,
+      adresse,
+      code_postal,
+      ville,
+      user_date_naissance,
+      user_mail,
+      user_phone,
+      user_photo_url: photoUrl, // L'URL de l'image
+      mot_de_passe,
+      numero_ciret,
+      monney,
+      duree_echeance,
+    };
 
-    // Fonction pour connecter un utilisateur praticien
-    async loginUserPraticien(req, res) {
-        try {
-            const { user_mail, mot_de_passe } = req.body;
-            const result = await userPraticienModel.loginUserPraticien(user_mail, mot_de_passe);
-            
-            if (result.success) {
-                return res.status(200).json({
-                    success: true,
-                    message: 'Connexion réussie.',
-                    user: result.user,
-                });
-            } else {
-                return res.status(401).json({
-                    success: false,
-                    message: result.message,
-                });
-            }
-        } catch (error) {
-            console.error('Erreur dans loginUserPraticien:', error.message);
-            return res.status(500).json({
-                success: false,
-                message: 'Erreur interne du serveur.',
-            });
-        }
+    // Appel à la méthode pour créer un utilisateur praticien
+    const result = await userPraticienModel.createUserPraticien(
+      userPraticienData
+    );
+
+    // Si l'utilisateur est créé avec succès, on renvoie une réponse
+    if (result.success) {
+      const { access, token } = getAccessAndToken(result.user);
+      return res.status(201).json({
+        success: true,
+        message: "Utilisateur praticien créé avec succès.",
+        user: result.user,
+        token: token,
+        access: access,
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: result.message,
+      });
     }
-}
+  } catch (error) {
+    console.error("Erreur dans createUserPraticien:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Erreur interne du serveur.",
+    });
+  }
+};
+// Contrôleur pour connecter un utilisateur praticien
+exports.loginUserPraticien = async (req, res) => {
+  try {
+    // Déstructuration des données reçues dans la requête POST
+    const { user_mail, mot_de_passe } = req.body;
 
-module.exports = new UserPraticienController();
+    // Affichage des données reçues pour débogage
+    console.log("Données reçues dans la requête POST : ");
+    console.log("user_mail:", user_mail);
+    console.log("mot_de_passe:", mot_de_passe);
+
+    // Vérifie que les paramètres sont présents
+    if (!user_mail || !mot_de_passe) {
+      return res.status(400).json({
+        success: false,
+        message: "Email et mot de passe sont requis.",
+      });
+    }
+
+    // Appel à la méthode loginUserPraticien du modèle
+    const result = await userPraticienModel.loginUserPraticien(
+      user_mail,
+      mot_de_passe
+    );
+
+    if (result.success) {
+      const { access, token } = getAccessAndToken(result.user);
+      return res.status(200).json({
+        success: true,
+        message: "Connexion réussie.",
+        user: result.user,
+        token: token,
+        access: access,
+      });
+    } else {
+      return res.status(401).json({
+        success: false,
+        message: result.message,
+      });
+    }
+  } catch (error) {
+    console.error("Erreur dans loginUserPraticien:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Erreur interne du serveur.",
+    });
+  }
+};
