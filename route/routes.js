@@ -106,6 +106,7 @@ router.post(
 
 // Routes pour les plages horaires
 router.post("/plage-horaire/add", PlageHoraireController.addPlageHoraire);
+
 router.get(
   "/plage-horaire/praticien/:id_prat_det",
   PlageHoraireController.getPlagesByPraticien
