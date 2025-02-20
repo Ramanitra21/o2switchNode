@@ -55,7 +55,7 @@ class PlageHoraireModel {
   async getPlagesByPraticien(id_prat_det) {
     try {
       const result = await sequelize.query(
-        `SELECT * FROM plage_horaire WHERE id_prat_det = :id_prat_det`,
+        `SELECT * FROM plage_horaire WHERE id_prat_det = :id_prat_det AND deleted_at = NULL `,
         {
           replacements: { id_prat_det },
           type: sequelize.QueryTypes.SELECT,

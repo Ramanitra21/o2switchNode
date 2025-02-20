@@ -4,15 +4,10 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const path = require("path");
-const userController = require("../controllers/userController");
-const PraticienController = require("../controllers/praticientController");
-const RendezVousController = require("../controllers/RendezVousController");
-const AgendaController = require("../controllers/AgendaController");
-const PratiqueController = require("../controllers/PratiqueController");
-const UserPraticienController = require("../controllers/UserPraticienController");
-const PlageHoraireController = require("../controllers/PlageHoraireController");
-const DisponibiliteController = require("../controllers/DisponibiliteController");
 const { authMiddleware } = require("../config/auth");
+
+// Importation du contrôleur
+const UserPraticienController = require("../controllers/UserPraticienController");
 
 // Configuration de multer pour l'upload des images
 const storage = multer.diskStorage({
@@ -26,90 +21,78 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-router.get("/private", authMiddleware, (req, res) => {
-  res.send(`Bienvenue dans la route protégée, utilisateur`);
-});
-
-router.post("/login", userController.loginUser);
-
-router.post("/loginPraticien", UserPraticienController.loginUserPraticien);
-
-// Routes utilisateur
-router.post("/create", upload.single("user_photo"), userController.createUser);
-
-// Routes praticien
-router.post("/createPraticien", PraticienController.createPraticien);
-router.get("/getPraticien", PraticienController.getPraticien);
-
 // Routes User Praticien
 router.post(
   "/createUserPraticien",
   upload.single("user_photo_url"),
-  UserPraticienController.createUserPraticien
+  async (req, res) => {
+    try {
+      await UserPraticienController.createUserPraticien(req, res);
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "Erreur serveur",
+        error: error.message,
+      });
+    }
+  }
 );
 
-// Routes discipline et pratique
-router.post(
-  "/discipline/create",
-  authMiddleware,
-  PraticienController.createDiscipline
-);
-router.post("/pratique/create", PraticienController.createPratique);
-router.get("/pratiques", PraticienController.getPratiques);
+// Route de connexion
+router.post("/login", async (req, res) => {
+  try {
+    await UserPraticienController.loginUserPraticien(req, res);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Erreur serveur",
+      error: error.message,
+    });
+  }
+});
 
-// Routes rendez-vous
-router.post("/rdv/create", RendezVousController.createRendezVous);
-router.get("/rdv/user/:id_users", RendezVousController.getRendezVousByUser);
+// Route protégée : Profil utilisateur (nécessite un token valide)
+router.get("/profile", authMiddleware, (req, res) => {
+  try {
+    res.json({ success: true, user: req.user });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Erreur serveur",
+      error: error.message,
+    });
+  }
+});
 
-// Routes agenda
-router.post("/agenda/add", AgendaController.addCreneauDisponibilite);
-router.get(
-  "/agenda/pratique/:id_pratique",
-  AgendaController.getCreneauxByPratique
-);
-router.get(
-  "/agenda/praticien/:id_prat_det",
-  AgendaController.getCreneauxByPraticien
-);
-router.get(
-  "/agenda/grouped/:id_prat_det",
-  AgendaController.getCreneauxGroupedByDisponibilite
-);
+// Route de vérification du code temporaire
+router.post("/verifyTempCode", async (req, res) => {
+  try {
+    await UserPraticienController.verifyTempCode(req, res);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Erreur serveur",
+      error: error.message,
+    });
+  }
+});
 
-// Routes disponibilités
-router.post("/disponibilite/add", DisponibiliteController.addDisponibilite);
-router.get(
-  "/disponibilite/pratique/:id_pratique",
-  DisponibiliteController.getDisponibilitesByPratique
-);
-router.get(
-  "/disponibilite/praticien/:id_prat_det",
-  DisponibiliteController.getDisponibilitesByPraticien
-);
+// Route pour récupérer les infos d'un utilisateur praticien
+router.get("/userPraticien/:user_mail", async (req, res) => {
+  try {
+    await UserPraticienController.getUserPraticienInfo(req, res);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Erreur serveur",
+      error: error.message,
+    });
+  }
+});
 
-// Routes pratiques
-router.post("/pratique/create", PratiqueController.createPratique);
-router.get(
-  "/pratiques/praticien/:id_prat_det",
-  PratiqueController.getPratiquesByIdPratDet
-);
-router.get(
-  "/pratiques/discipline/:id_dsp",
-  PratiqueController.getPratiquesByIdDsp
-);
-
-// Route pour ajouter un jour de travail pour un praticien
-router.post(
-  "/jour-travail/create",
-  PraticienController.createJourTravailPraticien
-);
-
-// Routes pour les plages horaires
-router.post("/plage-horaire/add", PlageHoraireController.addPlageHoraire);
-
-router.get(
-  "/plage-horaire/praticien/:id_prat_det",
-  PlageHoraireController.getPlagesByPraticien
-);
+// Route pour tester le token avec une requête GET
+router.get("/testToken", authMiddleware, (req, res) => {
+  res.json({ success: true, message: "Token valide", user: req.user });
+});
 
 module.exports = router;
