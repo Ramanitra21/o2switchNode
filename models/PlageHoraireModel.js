@@ -111,10 +111,33 @@ class PlageHoraireModel {
   async getPlagesByPraticien(id_prat_det) {
     try {
       const result = await sequelize.query(
-        `SELECT * FROM plage_horaire 
-         WHERE id_prat_det = :id_prat_det 
-         AND deleted_at IS NULL 
-         AND date_heure_debut >= NOW()`,
+        `SELECT 
+                p.id_plage,
+                p.date_heure_debut,
+                p.date_heure_fin,
+                p.deleted_at AS plage_deleted_at,
+                u.user_name,
+                u.user_forname,
+                u.adresse,
+                u.code_postal,
+                u.ville,
+                u.user_created_at,
+                u.user_date_naissance,
+                u.user_mail,
+                u.user_phone,
+                u.user_photo_url,
+                pi.numero_ciret,
+                pi.monney,
+                pi.duree_echeance,
+                pi.deleted_at AS prat_info_deleted_at
+             FROM plage_horaire p
+             JOIN praticien_info pi ON p.id_prat_det = pi.id_prat_det
+             JOIN users u ON pi.id_users = u.id_users
+             WHERE p.id_prat_det = :id_prat_det 
+             AND p.deleted_at IS NULL 
+             AND p.date_heure_debut >= NOW()
+             AND u.deleted_at IS NULL 
+             AND pi.deleted_at IS NULL`,
         {
           replacements: { id_prat_det },
           type: sequelize.QueryTypes.SELECT,
@@ -123,7 +146,8 @@ class PlageHoraireModel {
 
       return {
         success: true,
-        message: "Plages horaires récupérées avec succès.",
+        message:
+          "Plages horaires et informations des praticiens récupérées avec succès.",
         data: result,
       };
     } catch (error) {
