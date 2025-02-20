@@ -34,6 +34,28 @@ class PlageHoraireController {
     }
   }
 
+  // Supprimer une plage horaire
+  async deletePlageHoraire(req, res) {
+    try {
+      const { id_plage } = req.params;
+
+      const result = await plageHoraireModel.deletePlageHoraire(id_plage);
+
+      if (result.success) {
+        return res.status(200).json({ success: true, message: result.message });
+      } else {
+        return res
+          .status(400)
+          .json({ success: false, message: result.message });
+      }
+    } catch (error) {
+      console.error("Erreur dans deletePlageHoraire :", error.message);
+      return res
+        .status(500)
+        .json({ success: false, message: "Erreur interne du serveur." });
+    }
+  }
+
   // Récupérer les plages horaires par praticien
   async getPlagesByPraticien(req, res) {
     try {
