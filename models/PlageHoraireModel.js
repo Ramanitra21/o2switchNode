@@ -9,8 +9,9 @@ class PlageHoraireModel {
       const overlappingPlages = await sequelize.query(
         `SELECT id_plage FROM plage_horaire
          WHERE id_prat_det = :id_prat_det
+         AND deleted_at IS NULL
          AND (
-           (date_heure_debut < :date_heure_fin AND date_heure_fin > :date_heure_debut)
+           (date_heure_debut < :date_heure_fin AND date_heure_fin > :date_heure_debut) 
          )`,
         {
           replacements: {
@@ -52,10 +53,68 @@ class PlageHoraireModel {
     }
   }
 
+  async deletePlageHoraire(id_plage) {
+    try {
+      // Vérifier si la plage contient des rendez-vous occupés
+      const occupiedAppointments = await sequelize.query(
+        `SELECT id_rdv FROM rendez_vous
+         WHERE id_plage = :id_plage AND id_patient IS NOT NULL AND deleted_at IS NULL`,
+        {
+          replacements: { id_plage },
+          type: sequelize.QueryTypes.SELECT,
+        }
+      );
+
+      if (occupiedAppointments.length > 0) {
+        return {
+          success: false,
+          message:
+            "Impossible de supprimer : un ou plusieurs rendez-vous sont déjà occupés.",
+        };
+      }
+
+      // Supprimer les rendez-vous non occupés
+      await sequelize.query(
+        `UPDATE rendez_vous
+         SET deleted_at = NOW()
+         WHERE id_plage = :id_plage AND id_patient IS NULL`,
+        {
+          replacements: { id_plage },
+          type: sequelize.QueryTypes.UPDATE,
+        }
+      );
+
+      // Supprimer la plage horaire
+      await sequelize.query(
+        `UPDATE plage_horaire
+         SET deleted_at = NOW()
+         WHERE id_plage = :id_plage`,
+        {
+          replacements: { id_plage },
+          type: sequelize.QueryTypes.UPDATE,
+        }
+      );
+
+      return {
+        success: true,
+        message: "Plage horaire supprimée avec succès.",
+      };
+    } catch (error) {
+      console.error("Erreur dans deletePlageHoraire :", error.message);
+      return {
+        success: false,
+        message: "Erreur interne du serveur.",
+      };
+    }
+  }
+
   async getPlagesByPraticien(id_prat_det) {
     try {
       const result = await sequelize.query(
-        `SELECT * FROM plage_horaire WHERE id_prat_det = :id_prat_det AND deleted_at = NULL `,
+        `SELECT * FROM plage_horaire 
+         WHERE id_prat_det = :id_prat_det 
+         AND deleted_at IS NULL 
+         AND date_heure_debut >= NOW()`,
         {
           replacements: { id_prat_det },
           type: sequelize.QueryTypes.SELECT,
