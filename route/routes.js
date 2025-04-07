@@ -6,8 +6,9 @@ const multer = require("multer");
 const path = require("path");
 const { authMiddleware } = require("../config/auth");
 
-// Importation du contrôleur
+// Importation des contrôleurs
 const UserPraticienController = require("../controllers/UserPraticienController");
+const PlageHoraireController = require("../controllers/PlageHoraireController");
 
 // Configuration de multer pour l'upload des images
 const storage = multer.diskStorage({
@@ -93,6 +94,43 @@ router.get("/userPraticien/:user_mail", async (req, res) => {
 // Route pour tester le token avec une requête GET
 router.get("/testToken", authMiddleware, (req, res) => {
   res.json({ success: true, message: "Token valide", user: req.user });
+});
+
+// Routes pour la gestion des plages horaires
+router.post("/plageHoraire", authMiddleware, async (req, res) => {
+  try {
+    await PlageHoraireController.addPlageHoraire(req, res);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Erreur serveur",
+      error: error.message,
+    });
+  }
+});
+
+router.get("/plageHoraire/:id_prat_det", authMiddleware, async (req, res) => {
+  try {
+    await PlageHoraireController.getPlagesByPraticien(req, res);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Erreur serveur",
+      error: error.message,
+    });
+  }
+});
+
+router.delete("/plageHoraire/:id_plage", authMiddleware, async (req, res) => {
+  try {
+    await PlageHoraireController.deletePlageHoraire(req, res);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Erreur serveur",
+      error: error.message,
+    });
+  }
 });
 
 module.exports = router;

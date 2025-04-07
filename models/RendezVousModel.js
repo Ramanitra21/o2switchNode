@@ -221,12 +221,17 @@ class RendezVousModel {
                 up.user_created_at AS patient_created_at,
                 up.user_date_naissance AS patient_birth_date,
                 
-                -- Informations sur la pratique
-                pr.nom_pratique,
-                pr.desc_pratique,
-                pr.tarif,
-                pr.duree,
-                pr.couleur_pratique,
+                
+                    -- Informations sur la pratique
+                    pr.nom_pratique,
+                    pr.desc_pratique,
+                    pr.longitude,
+                	pr.latitude,	
+                    pr.isHome,
+                    pr.note	,
+                    pr.tarif,
+                    pr.duree,
+                    pr.couleur_pratique,
                 
                 -- Informations sur le praticien
                 pi.numero_ciret,

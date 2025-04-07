@@ -40,11 +40,17 @@ Répertoire
 
 FTP_HOST → ftp.dehe7322.odns.fr
 FTP_USERNAME_BACKEND → medical_app@back.passion-vins.fr
-FTP_PASSWORD_BACKEND → 5Yvsf5vg3@(
+FTP_PASSWORD_BACKEND → _!(yx;WeGmhg
 FTP_PORT → 21
 
 
 FTP_HOST → ftp.dehe7322.odns.fr
 FTP_USERNAME_FRONTEND → medical_app@front.passion-vins.fr
-FTP_PASSWORD_FRONTEND → 5Yvsf5vg3@(
+FTP_PASSWORD_FRONTEND → _!(yx;WeGmhg
 FTP_PORT → 21
+
+
+----------------------------------------------------
+base de données cPanel : 
+nom user : dehe7322_hellosoin
+mdp : $Y@^Y*vX-fR9
