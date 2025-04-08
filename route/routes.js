@@ -8,6 +8,7 @@ const { authMiddleware } = require("../config/auth");
 
 // Importation des contrôleurs
 const UserPraticienController = require("../controllers/UserPraticienController");
+const PractitionerController = require("../controllers/PractitionerController");
 const PlageHoraireController = require("../controllers/PlageHoraireController");
 
 // Configuration de multer pour l'upload des images
@@ -39,10 +40,36 @@ router.post(
   }
 );
 
+//Routes create practitioner
+router.post("/createPractitioner", async (req, res) => {
+  try {
+    await PractitionerController.createPractitioner(req, res);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Erreur serveur",
+      error: error.message,
+    });
+  }
+});
+
 // Route de connexion
 router.post("/login", async (req, res) => {
   try {
     await UserPraticienController.loginUserPraticien(req, res);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Erreur serveur",
+      error: error.message,
+    });
+  }
+});
+
+// Route de connexion praticien
+router.post("/seconnecter", async (req, res) => {
+  try {
+    await PractitionerController.loginPractitioner(req, res);
   } catch (error) {
     res.status(500).json({
       success: false,
